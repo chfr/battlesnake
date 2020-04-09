@@ -1,0 +1,1 @@
+web: java $JAVA_OPTS -jar build/libs/snake-1.0-SNAPSHOT.jar
