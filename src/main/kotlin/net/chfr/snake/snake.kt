@@ -49,7 +49,12 @@ fun parseBoard(map: Json): Board {
     return Board(
         width = map.getValue("height") as Int,
         height = map.getValue("width") as Int,
-        food = emptyList()
+        food = (map.getValue("food") as List<Map<String, Any>>).map {
+            Point(
+                x = it.getValue("x") as Int,
+                y = it.getValue("y") as Int
+            )
+        }
     )
 }
 
