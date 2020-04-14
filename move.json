@@ -8,8 +8,8 @@
     "width": 15,
     "food": [
       {
-        "x": 1,
-        "y": 3
+        "x": 5,
+        "y": 5
       }
     ],
     "snakes": [
@@ -19,8 +19,8 @@
         "health": 90,
         "body": [
           {
-            "x": 1,
-            "y": 3
+            "x": 4,
+            "y": 4
           }
         ],
         "shout": "Hello my name is Sneky Snek"
@@ -35,8 +35,8 @@
             "y": 3
           },
           {
-            "x": 4,
-            "y": 5
+            "x": 1,
+            "y": 4
           }
         ],
         "shout": "Hello my name is Sneky Snek 2"
@@ -49,8 +49,8 @@
     "health": 90,
     "body": [
       {
-        "x": 1,
-        "y": 3
+        "x": 0,
+        "y": 0
       }
     ],
     "shout": "Hello my name is Sneky Snek"
