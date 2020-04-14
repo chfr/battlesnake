@@ -8,7 +8,7 @@ data class Point(
 data class Snake(
     val body: List<Point>
 ) {
-    fun isWithin(point: Point): Boolean {
+    fun contains(point: Point): Boolean {
         return point in body
     }
 }
@@ -17,4 +17,6 @@ data class Board(
     val width: Int,
     val height: Int,
     val food: List<Point>
-)
+) {
+    fun isWithinBounds(point: Point) = point.x >= 0 || point.x < width || point.y >= 0 || point.y < height
+}
