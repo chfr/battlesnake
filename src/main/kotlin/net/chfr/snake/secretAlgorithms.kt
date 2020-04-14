@@ -12,9 +12,15 @@ fun isValidMove(board: Board, me: Snake, enemies: List<Snake>, move: Move): Bool
     val head = me.body.first()
     val newHead = applyMove(head, move)
 
+
     val occupiedSquares = (listOf(me) + enemies).flatMap { it.body }.toSet()
 
-    return board.isWithinBounds(newHead) && newHead !in occupiedSquares
+    val squareOccupied = newHead in occupiedSquares
+    val outOutBounds = !board.isWithinBounds(newHead)
+
+    println("Moved ${move.label}, from $head to $newHead... Occupied: $squareOccupied, outOfBounds: $outOutBounds")
+
+    return !(squareOccupied || outOutBounds)
 }
 
 fun nextMove(
