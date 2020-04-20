@@ -6,6 +6,7 @@ data class Point(
 )
 
 data class Snake(
+    val health: Int,
     val body: List<Point>
 ) {
     fun contains(point: Point): Boolean {
@@ -19,4 +20,11 @@ data class Board(
     val food: List<Point>
 ) {
     fun isWithinBounds(point: Point) = point.x in 0 until width && point.y in 0 until height
+}
+
+enum class Move(val label: String) {
+    Up("up"),
+    Down("down"),
+    Left("left"),
+    Right("right")
 }

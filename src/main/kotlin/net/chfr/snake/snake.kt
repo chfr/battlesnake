@@ -10,13 +10,6 @@ import io.javalin.http.Context
 val mapper = jacksonObjectMapper()
 typealias Json = Map<String, Any>
 
-enum class Move(val label: String) {
-    Up("up"),
-    Down("down"),
-    Left("left"),
-    Right("right")
-}
-
 fun main(args: Array<String>) {
     val app = Javalin.create().start(getHerokuAssignedPort())
     app.get("/") { ctx -> ctx.result("Hello herokuuuu") }
@@ -29,6 +22,7 @@ fun main(args: Array<String>) {
 fun move(context: Context) {
     val body = context.body()
     val bodyAsMap: Json = mapper.readValue(body)
+    val turn = bodyAsMap.getValue("turn") as Int
 
     val boardAsMap = bodyAsMap.getValue("board") as Map<String, Any>
     val board = parseBoard(boardAsMap)
@@ -37,6 +31,7 @@ fun move(context: Context) {
         parseSnake(it)
     }
 
+    println("------------[ Working on turn $turn ]-------------------")
     val nextMove = nextMove(board, me, enemies)
 
     val response = mapOf(
@@ -62,6 +57,7 @@ fun parseSnake(map: Json): Snake {
     val bodyPoints = map.getValue("body" ) as List<Map<String, Any>>
 
     return Snake(
+        map.getValue("health") as Int,
         bodyPoints.map {
             Point(
                 x = it.getValue("x") as Int,

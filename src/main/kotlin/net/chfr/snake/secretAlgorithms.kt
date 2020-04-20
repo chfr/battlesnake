@@ -19,6 +19,14 @@ fun moveTowards(from: Point, to: Point): Move {
     }
 }
 
+fun moveSnake(snake: Snake, move: Move): Snake {
+    val newHead = applyMove(snake.body.first(), move)
+
+    return snake.copy(
+        body = listOf(newHead) + snake.body.dropLast(1)
+    )
+}
+
 fun closestFood(me: Snake, board: Board): Point? {
     val head = me.body.first()
 
@@ -34,11 +42,11 @@ fun applyMove(point: Point, move: Move) = when (move) {
     Move.Right -> point.copy(x = point.x + 1)
 }
 
-fun randomValidMove(board: Board, me: Snake, enemies: List<Snake>): Move {
+fun randomValidMove(board: Board, me: Snake, enemies: List<Snake>, except: Set<Move> = emptySet()): Move {
     val moves = Move.values().toList().shuffled()
 
     val moveOrNull = moves.firstOrNull { move ->
-        isValidMove(board, me, enemies, move)
+        move !in except && isValidMove(board, me, enemies, move)
     }
 
     return when (moveOrNull) {
@@ -60,8 +68,6 @@ fun isValidMove(board: Board, me: Snake, enemies: List<Snake>, move: Move): Bool
     val squareOccupied = newHead in occupiedSquares
     val outOutBounds = !board.isWithinBounds(newHead)
 
-    println("Moved ${move.label}, from $head to $newHead... Occupied: $squareOccupied, outOfBounds: $outOutBounds")
-
     return !(squareOccupied || outOutBounds)
 }
 
@@ -70,15 +76,89 @@ fun nextMove(
     me: Snake,
     enemies: List<Snake>
 ): Move {
-    return when (val food = closestFood(me, board)) {
-        null -> randomValidMove(board, me, enemies)
-        else -> {
-            val potentialMove = moveTowards(me.body.first(), food)
-            if (isValidMove(board, me, enemies, potentialMove)) {
-                potentialMove
-            } else {
-                randomValidMove(board, me, enemies)
+    println("I have ${me.health} hp")
+
+    return if (isHungry(me, board)) {
+        val food = closestFood(me, board)!!
+
+        val potentialMove = moveTowards(me.body.first(), food)
+        if (isValidMove(board, me, enemies, potentialMove)) {
+            if (likelyHeadOn(me, enemies, potentialMove)) {
+                println("Potential head on! Abort!")
+                randomValidMove(board, me, enemies, except = setOf(potentialMove))
             }
+            potentialMove
+        } else {
+            println("Couldn't move towards food!")
+            randomValidMove(board, me, enemies)
+        }
+    } else {
+        straightLines(me, board, enemies)
+    }
+}
+
+fun straightLines(me: Snake, board: Board, enemies: List<Snake>): Move {
+    val direction = movingDirection(me)
+
+    return if (isValidMove(board, me, enemies, direction)) {
+        if (likelyHeadOn(me, enemies, direction)) {
+            println("Potential head on! Abort!")
+            randomValidMove(board, me, enemies, except = setOf(direction))
+        } else {
+            direction
+        }
+    } else {
+        // TODO don't do random?
+        randomValidMove(board, me, enemies)
+    }
+}
+
+/**
+ * Direction in which the snake is moving
+ */
+fun movingDirection(snake: Snake): Move {
+    if (snake.body.size == 1)
+        return Move.Up
+
+    val head = snake.body.first()
+    val body = snake.body[1]
+
+    return if (head.copy(x = head.x - 1) == body) {
+        Move.Right
+    } else if (head.copy(x = head.x + 1) == body) {
+        Move.Left
+    } else if (head.copy(y = head.y - 1) == body) {
+        Move.Down
+    } else {
+        Move.Up
+    }
+}
+
+fun likelyHeadOn(me: Snake, enemies: List<Snake>, direction: Move): Boolean {
+    val enemyHeads = enemies.map { it.body.first() }.toSet()
+    val oneMoveAhead = moveSnake(me, direction)
+    val twoMovesAhead = moveSnake(oneMoveAhead, direction)
+
+    return oneMoveAhead.body.first() in enemyHeads || twoMovesAhead.body.first() in enemyHeads
+}
+
+fun isHungry(me: Snake, board: Board): Boolean {
+    if (me.body.size == 1)
+        return true
+    if (me.health < (board.height + board.width) / 2) {
+        return true
+    }
+
+    return when (val closestFood = closestFood(me, board)) {
+        null -> false
+        else -> {
+            val distance = distance(closestFood, me.body.first())
+            // If I can only travel thrice the distance to the closest food, it's time to hunt!
+            if (distance * 3 > me.health) {
+                println("ME HUNGRY! Closest is $distance away")
+                return true
+            }
+            return false
         }
     }
 }
